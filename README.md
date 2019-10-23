@@ -1,10 +1,7 @@
-# hkt23
+# hkt25
 
-テーマ：呪い
+テーマ： 線
 
-https://osakana4242.github.io/hkt23/
+https://osakana4242.github.io/hkt25/
 
-■遊び方
-
-Zキーでとんかちを振り下ろすだけ
 
