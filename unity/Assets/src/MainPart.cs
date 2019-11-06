@@ -16,6 +16,9 @@ namespace Osakana4242 {
 		public ResourceBank resource;
 		public GameObject cameraGo;
 		public GameObject playerGo;
+		public GameObject doorGo;
+
+		public UnityEngine.Tilemaps.Tilemap tilemap1;
 
 		[SerializeField]
 		public int playerId;
@@ -73,6 +76,8 @@ namespace Osakana4242 {
 			sm_ = new StateMachine<MainPart>(stateInit_g_);
 			objectList_ = new List<MyObject>();
 			Application.logMessageReceived += OnLog;
+			var tilemap2 = GameObject.Instantiate(tilemap1, tilemap1.transform.position + new Vector3(5, 0, 0), Quaternion.identity, tilemap1.transform.parent);
+
 		}
 		public void OnLog(string condition, string stackTrace, LogType type) {
 			switch (type) {
@@ -93,21 +98,21 @@ namespace Osakana4242 {
 		void FixedUpdate() {
 			if (data.isPlaying) {
 			}
-			{
-				var rb = playerGo.GetComponent<Rigidbody2D>();
-				// playerGo.OnCollisionEnter2DAsObservable().Subscribe(_col => {
-				// 	UnityEngine.Tilemaps.Tilemap tilemap;
-				// 	tilemap.
+			// {
+			// 	var rb = playerGo.GetComponent<Rigidbody2D>();
+			// 	// playerGo.OnCollisionEnter2DAsObservable().Subscribe(_col => {
+			// 	// 	UnityEngine.Tilemaps.Tilemap tilemap;
+			// 	// 	tilemap.
 
-				// });
-				var v = rb.velocity;
-				v.x = 2f;
-				if (hasJump_) {
-					v.y = 4f;
-					hasJump_ = false;
-				}
-				rb.velocity = v;
-			}
+			// 	// });
+			// 	var v = rb.velocity;
+			// 	v.x = 2f;
+			// 	if (hasJump_) {
+			// 		v.y = 4f;
+			// 		hasJump_ = false;
+			// 	}
+			// 	rb.velocity = v;
+			// }
 
 			for (var i = objectList_.Count - 1; 0 <= i; i--) {
 				var obj = objectList_[i];
@@ -180,6 +185,7 @@ namespace Osakana4242 {
 						var self = _evt.owner;
 						self.progressTextUI.text = "";
 						self.centerTextUI.text = "READY";
+						self.doorGo.GetComponent<Animator>().Play("close");
 
 						{
 							var player = new GameObject().AddComponent<MyObject>();
@@ -233,6 +239,24 @@ namespace Osakana4242 {
 			if (Input.GetKeyDown(KeyCode.Z)) {
 				self.hasJump_ = true;
 			}
+
+			{
+				var pl = self.playerGo.GetComponent<PlayerController>();
+				pl.ManualUpdate();
+				// playerGo.OnCollisionEnter2DAsObservable().Subscribe(_col => {
+				// 	UnityEngine.Tilemaps.Tilemap tilemap;
+				// 	tilemap.
+
+				// });
+				// var v = rb.velocity;
+				// v.x = 2f;
+				// if (hasJump_) {
+				// 	v.y = 4f;
+				// 	hasJump_ = false;
+				// }
+				// rb.velocity = v;
+			}
+
 
 			if (Input.GetKeyDown(KeyCode.R)) {
 				return stateExit_g_;
