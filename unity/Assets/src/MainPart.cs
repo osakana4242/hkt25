@@ -17,6 +17,7 @@ namespace Osakana4242 {
 		public GameObject cameraGo;
 		public GameObject playerGo;
 		public GameObject doorGo;
+		public GameObject trainGo;
 
 		public UnityEngine.Tilemaps.Tilemap tilemap1;
 
@@ -76,9 +77,10 @@ namespace Osakana4242 {
 			sm_ = new StateMachine<MainPart>(stateInit_g_);
 			objectList_ = new List<MyObject>();
 			Application.logMessageReceived += OnLog;
-			var tilemap2 = GameObject.Instantiate(tilemap1, tilemap1.transform.position + new Vector3(5, 0, 0), Quaternion.identity, tilemap1.transform.parent);
-
+			//var tilemap2 = GameObject.Instantiate(tilemap1, tilemap1.transform.position + new Vector3(5, 0, 0), Quaternion.identity, tilemap1.transform.parent);
+			doorGo.SetActive(true);
 		}
+
 		public void OnLog(string condition, string stackTrace, LogType type) {
 			switch (type) {
 				case LogType.Exception:
@@ -95,9 +97,78 @@ namespace Osakana4242 {
 			objectList_ = null;
 		}
 
+		float trainSpeed;
+		float trainTargetSpeed;
+		TrainState trainState;
+		float trainTargetX = 100f;
+		float trainTime;
+		enum TrainState {
+			CLOSE1,
+			CLOSE2,
+			CLOSE3,
+			RUN,
+			OPEN1,
+			OPEN2,
+			OPEN3,
+		}
+
 		void FixedUpdate() {
 			if (data.isPlaying) {
 			}
+
+			var trainPos = trainGo.transform.position;
+			var prevTrainState = trainState;
+			switch (trainState) {
+				case TrainState.CLOSE1:
+					if (0.5f <= trainTime) {
+						trainState = TrainState.CLOSE2;
+					}
+					break;
+				case TrainState.CLOSE2:
+					if (trainTime == 0f) {
+						doorGo.GetComponent<Animator>().Play("close");
+					}
+					if (1f <= trainTime) {
+						trainState = TrainState.CLOSE3;
+					}
+					break;
+				case TrainState.CLOSE3:
+					trainState = TrainState.RUN;
+					break;
+				case TrainState.RUN:
+					var dist = trainTargetX - trainPos.x;
+					if ( 15f < dist ) {
+						trainTargetSpeed = 3f;
+					} else {
+						trainTargetSpeed = 0.1f;
+					}
+					trainSpeed = Mathf.MoveTowards( trainSpeed, trainTargetSpeed, 0.1f * Time.deltaTime );
+					if (dist == 0f) {
+						trainState = TrainState.OPEN1;
+					}
+					break;
+				case TrainState.OPEN1:
+					if (1f <= trainTime) {
+						trainState = TrainState.OPEN2;
+					}
+					break;
+				case TrainState.OPEN2:
+					if (trainTime == 0f) {
+						doorGo.GetComponent<Animator>().Play("open");
+					}
+					if (1f <= trainTime) {
+						trainState = TrainState.OPEN3;
+					}
+					break;
+				case TrainState.OPEN3:
+					break;
+			}
+			trainTime += Time.deltaTime;
+			if (prevTrainState != trainState) {
+				trainTime = 0f;
+			}
+			trainPos.x = Mathf.MoveTowards( trainPos.x, trainTargetX, trainSpeed * Time.deltaTime );
+			trainGo.transform.position = trainPos;
 			// {
 			// 	var rb = playerGo.GetComponent<Rigidbody2D>();
 			// 	// playerGo.OnCollisionEnter2DAsObservable().Subscribe(_col => {
@@ -185,7 +256,6 @@ namespace Osakana4242 {
 						var self = _evt.owner;
 						self.progressTextUI.text = "";
 						self.centerTextUI.text = "READY";
-						self.doorGo.GetComponent<Animator>().Play("close");
 
 						{
 							var player = new GameObject().AddComponent<MyObject>();
